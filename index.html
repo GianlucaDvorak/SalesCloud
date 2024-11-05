@@ -29,37 +29,30 @@
 <body>
   <h2>Enter Phone Number</h2>
   <input type="text" id="phoneNumber" placeholder="Enter phone number">
-  <button onclick="sendCallData()">Accept - IncomingCall</button>
-  <button onclick="sendCallData1()">Benachrichtigen - IncomingCall</button>
-  <button onclick="sendCallData2()">Benachrichtigen - payload 1</button>
-  <button onclick="sendCallData3()">Benachrichtigen - payload 2</button>
-  <button onclick="acceptCallData()">Accept Call</button>
-  <button onclick="finishCallData()">Finish Call</button>
-  <button onclick="resetCall()">Reset Call</button>
+  <button id="incomingCallButton" onclick="sendCallData()">IncomingCall - Notification</button>
+  
+  <!-- Buttons for call actions -->
+  <div id="callButtons" style="display: none;">
+    <button id="acceptCallButton" onclick="acceptCallData()">Accept Call</button>
+    <button id="declineCallButton" onclick="declineCallData()">Decline Call</button>
+  </div>
+  
+  <button id="endCallButton" style="display: none;" onclick="finishCallData()">End Call</button>
+  
 
- <!-- Display area for the XML payload -->
- <div id="payloadDisplay" class="payloadDisplay"></div>
- <div id="payloadDisplayAfter" class="payloadDisplay"></div>
+  <!-- Display area for the payload 
+  <div id="payloadDisplay" class="payloadDisplay"></div-->
+
+  <audio id="callSound" src="call-sound.mp3" preload="auto"></audio> <!-- Replace with your sound file -->
+
 
 
   <script>
     // Persistent variable to store the ExternalReferenceID
     let externalReferenceID = generateUniqueID();
-    let data ="leer";
-    let data1 = "leer";
+    let callSound = document.getElementById("callSound");
 
-    // Set up a single message event listener when the page loads
-    window.addEventListener("message", (event) => {
-      console.log("Event Data");
-      // Check if the message is from the parent and includes a confirmation status
-      console.log("Event Data:", event.data);
-      data = event.data;
-      if (event.data && event.data.status === "received") {
-        console.log("Confirmation received from parent:", event.data);
-        displayConfirmation(event.data);
-      }
-    });
-
+    
     // Function to create XML payload
     function _formXMLPayload(parameters) {
       var sPayload = "<?xml version='1.0' encoding='utf-8' ?> <payload> ";
@@ -79,32 +72,13 @@
     function sendIncomingCalltoC4C(parameters) {
       //var payload = _formXMLPayload(parameters);
       var payload = _formJSONPayload(parameters);
-      console.log("Here it starts!!!");
-      displayPayload(payload);
+      //displayPayload(payload);
       _doCall(payload);
-      displayPayloadAfter(payload);
     }
 
     // Function to actually post the message to the parent window
     function _doCall(sPayload) {
-      console.log("Here it posts!");
       window.parent.postMessage(sPayload, "*");
-      console.log("Here it postes end!!!");
-      console.log("test!!!");
-      console.log("Event", data);
-      console.log("Event", data1);
-        // Confirmation handler - clears timeout on confirmation
-      function confirmHandler(event) {
-        console.log("Answer", event.data);
-        data1 = event.data;
-        if (event.data && event.data.status === "received") {
-          console.log("Answer", event.data);  // Log confirmation
-        }
-      }
-
-      // Listen for the message only once for this call
-      window.addEventListener("message", confirmHandler, { once: true });
-
     }
 
     // Function to display the payload on UI for 10 seconds
@@ -114,37 +88,8 @@
       payloadDisplay.style.display = "block";
     
     }
-    function displayPayloadAfter(payload) {
-      const payloadDisplay = document.getElementById("payloadDisplayAfter");
-      payloadDisplay.textContent = JSON.stringify(payload, null, 2);
-      payloadDisplay.style.display = "block";
-    
-    }
     // Main function triggered by the button click
     function sendCallData() {
-      const phoneNumber = document.getElementById("phoneNumber").value;
-
-      // If phone number is empty, alert the user
-      if (!phoneNumber) {
-        alert('Please enter a phone number');
-        return;
-      }
-
-      // Constructing the payload with the phone number
-      const parameters = {
-        Type: "CALL",
-        EventType: "INBOUND",
-        Action: "",
-        ANI: phoneNumber,
-        ExternalReferenceID: `${externalReferenceID}` // Random unique ID for example
-      };
-
-      // Send the data
-      sendIncomingCalltoC4C(parameters);
-    }
-
-    // Main function triggered by the button click
-    function sendCallData1() {
       const phoneNumber = document.getElementById("phoneNumber").value;
 
       // If phone number is empty, alert the user
@@ -164,50 +109,15 @@
 
       // Send the data
       sendIncomingCalltoC4C(parameters);
+      showIncomingCall();
+
     }
-    // Main function triggered by the button click
-    function sendCallData2() {
-      const phoneNumber = document.getElementById("phoneNumber").value;
 
-      // If phone number is empty, alert the user
-      if (!phoneNumber) {
-        alert('Please enter a phone number');
-        return;
-      }
-
-      // Constructing the payload with the phone number
-      const parameters = {
-        "Type": "CALL",
-        "EventType": "INBOUND",
-        "Action": "ACCEPT",
-        "ANI": `${phoneNumber}`,
-        "ExternalReferenceID": `${externalReferenceID}` // Random unique ID for example
-      };
-
-      // Send the data
-      sendIncomingCalltoC4C(parameters);
-    }
-    // Main function triggered by the button click
-    function sendCallData3() {
-      const phoneNumber = document.getElementById("phoneNumber").value;
-
-      // If phone number is empty, alert the user
-      if (!phoneNumber) {
-        alert('Please enter a phone number');
-        return;
-      }
-
-      // Constructing the payload with the phone number
-      const parameters = {
-        "Type": "CALL",
-        "EventType": "INBOUND",
-        "Action": "ACCEPT",
-        "ANI": phoneNumber,
-        "ExternalReferenceID": externalReferenceID // Random unique ID for example
-      };
-
-      // Send the data
-      sendIncomingCalltoC4C(parameters);
+    // Show incoming call interface and play sound
+    function showIncomingCall() {
+      document.getElementById("incomingCallButton").style.display = "none"; // Hide incoming call button
+      document.getElementById("callButtons").style.display = "block"; // Show accept/decline buttons
+      callSound.play(); // Play incoming call sound
     }
 
     // Main function triggered by the button click
@@ -224,13 +134,44 @@
       const parameters = {
         "Type": "CALL",
         "EventType": "INBOUND",
-        "Action": "ACCEPT",
+        "Action": "",
         "ANI": phoneNumber,
         "ExternalReferenceID": `${externalReferenceID}` // Random unique ID for example
       };
 
       // Send the data
       sendIncomingCalltoC4C(parameters);
+      callSound.pause(); // Stop the sound
+      callSound.currentTime = 0; // Reset sound to start
+      document.getElementById("acceptCallButton").style.display = "none"; // Hide accept button
+      document.getElementById("declineCallButton").style.display = "none"; // Hide decline button
+      document.getElementById("endCallButton").style.display = "inline"; // Show end call button
+    }
+
+    // Decline call function
+    function declineCallData() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+
+      // If phone number is empty, alert the user
+      if (!phoneNumber) {
+        alert('Please enter a phone number');
+        return;
+      }
+
+      // Constructing the payload with the phone number
+      const parameters = {
+        "Type": "CALL",
+        "EventType": "UPDATEACTIVITY",
+        "Action": "END",
+        "ANI": phoneNumber,
+        "ExternalReferenceID": `${externalReferenceID}` // Random unique ID for example
+      };
+
+      // Send the data
+      sendIncomingCalltoC4C(parameters);
+      callSound.pause(); // Stop the sound
+      callSound.currentTime = 0; // Reset sound to start
+      resetInterface(); // Reset the interface
     }
 
     // Main function triggered by the button click
@@ -254,6 +195,18 @@
 
       // Send the data
       sendIncomingCalltoC4C(parameters);
+      callSound.pause(); // Stop the sound
+      callSound.currentTime = 0; // Reset sound to start
+      resetInterface(); // Reset the interface
+    }
+
+    // Reset interface
+    function resetInterface() {
+      document.getElementById("incomingCallButton").style.display = "inline"; // Show incoming call button
+      document.getElementById("callButtons").style.display = "none"; // Hide accept/decline buttons
+      document.getElementById("endCallButton").style.display = "none"; // Hide end call button
+      document.getElementById("phoneNumber").value = ""; // Clear phone number input
+      externalReferenceID = generateUniqueID();
     }
 
     // Function to reset the ExternalReferenceID
