@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phone Call Integration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input[type="text"], button {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    button {
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .payloadDisplay {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      display: none; /* Initially hidden */
+    }
+  </style>
+</head>
+<body>
+  <h2>Enter Phone Number</h2>
+  <input type="text" id="phoneNumber" placeholder="Enter phone number">
+  <button onclick="sendCallData()">Accept - IncomingCall</button>
+  <button onclick="sendCallData1()">Benachrichtigen - IncomingCall</button>
+  <button onclick="sendCallData2()">Benachrichtigen - payload 1</button>
+  <button onclick="sendCallData3()">Benachrichtigen - payload 2</button>
+  <button onclick="acceptCallData()">Accept Call</button>
+  <button onclick="finishCallData()">Finish Call</button>
+  <button onclick="resetCall()">Reset Call</button>
+
+ <!-- Display area for the XML payload -->
+ <div id="payloadDisplay" class="payloadDisplay"></div>
+ <div id="payloadDisplayAfter" class="payloadDisplay"></div>
+
+
+  <script>
+    // Persistent variable to store the ExternalReferenceID
+    let externalReferenceID = generateUniqueID();
+
+    // Set up a single message event listener when the page loads
+    window.addEventListener("message", (event) => {
+      // Check if the message is from the parent and includes a confirmation status
+      console.log("Event Data:", event.data);
+      if (event.data && event.data.status === "received") {
+        console.log("Confirmation received from parent:", event.data);
+        displayConfirmation(event.data);
+      }
+    });
+
+    // Function to create XML payload
+    function _formXMLPayload(parameters) {
+      var sPayload = "<?xml version='1.0' encoding='utf-8' ?> <payload> ";
+      for (var key in parameters) {
+        var tag = "<" + key + ">" + parameters[key] + "</" + key + ">";
+        sPayload += tag;
+      }
+      sPayload += "</payload>";
+      return sPayload;
+    }
+    function _formJSONPayload(parameters) { 
+      var payload = { "payload": parameters };
+      return payload;
+    };
+
+    // Function to send the payload via postMessage
+    function sendIncomingCalltoC4C(parameters) {
+      //var payload = _formXMLPayload(parameters);
+      var payload = _formJSONPayload(parameters);
+      console.log("Here it starts!!!")
+      displayPayload(payload);
+      _doCall(payload);
+      displayPayloadAfter(payload);
+    }
+
+    // Function to actually post the message to the parent window
+    function _doCall(sPayload) {
+      console.log("Here it posts!!!")
+      window.parent.postMessage(sPayload, "*");
+      console.log("Here it postes end!!!")
+
+        // Confirmation handler - clears timeout on confirmation
+      function confirmHandler(event) {
+        if (event.data && event.data.status === "received") {
+          clearTimeout(timeoutID); // Clear the timeout if confirmation received
+          console.log("Answer", event.data);  // Log confirmation
+        }
+      }
+
+      // Listen for the message only once for this call
+      window.addEventListener("message", confirmHandler, { once: true });
+
+    }
+
+    // Function to display the payload on UI for 10 seconds
+    function displayPayload(payload) {
+      const payloadDisplay = document.getElementById("payloadDisplay");
+      payloadDisplay.textContent = JSON.stringify(payload, null, 2);
+      payloadDisplay.style.display = "block";
+    
+    }
+    function displayPayloadAfter(payload) {
+      const payloadDisplay = document.getElementById("payloadDisplayAfter");
+      payloadDisplay.textContent = JSON.stringify(payload, null, 2);
+      payloadDisplay.style.display = "block";
+    
+    }
+    // Main function triggered by the button click
+    function sendCallData() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+
+      // If phone number is empty, alert the user
+      if (!phoneNumber) {
+        alert('Please enter a phone number');
+        return;
+      }
+
+      // Constructing the payload with the phone number
+      const parameters = {
+        "Type": "CALL",
+        "EventType": "INBOUND",
+        "Action": "ACCEPT",
+        "ANI": phoneNumber,
+        "ExternalReferenceID": `${externalReferenceID}` // Random unique ID for example
+      };
+
+      // Send the data
+      sendIncomingCalltoC4C(parameters);
+    }
+
+    // Main function triggered by the button click
+    function sendCallData1() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+
+      // If phone number is empty, alert the user
+      if (!phoneNumber) {
+        alert('Please enter a phone number');
+        return;
+      }
+
+      // Constructing the payload with the phone number
+      const parameters = {
+        "Type": "CALL",
+        "EventType": "INBOUND",
+        "Action": "NOTIFY",
+        "ANI": phoneNumber,
+        "ExternalReferenceID": `${externalReferenceID}` // Random unique ID for example
+      };
+
+      // Send the data
+      sendIncomingCalltoC4C(parameters);
+    }
+    // Main function triggered by the button click
+    function sendCallData2() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+
+      // If phone number is empty, alert the user
+      if (!phoneNumber) {
+        alert('Please enter a phone number');
+        return;
+      }
+
+      // Constructing the payload with the phone number
+      const parameters = {
+        "Type": "CALL",
+        "EventType": "INBOUND",
+        "Action": "ACCEPT",
+        "ANI": `${phoneNumber}`,
+        "ExternalReferenceID": `${externalReferenceID}` // Random unique ID for example
+      };
+
+      // Send the data
+      sendIncomingCalltoC4C(parameters);
+    }
+    // Main function triggered by the button click
+    function sendCallData3() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+
+      // If phone number is empty, alert the user
+      if (!phoneNumber) {
+        alert('Please enter a phone number');
+        return;
+      }
+
+      // Constructing the payload with the phone number
+      const parameters = {
+        "Type": "CALL",
+        "EventType": "INBOUND",
+        "Action": "ACCEPT",
+        "ANI": phoneNumber,
+        "ExternalReferenceID": externalReferenceID // Random unique ID for example
+      };
+
+      // Send the data
+      sendIncomingCalltoC4C(parameters);
+    }
+
+    // Main function triggered by the button click
+    function acceptCallData() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+
+      // If phone number is empty, alert the user
+      if (!phoneNumber) {
+        alert('Please enter a phone number');
+        return;
+      }
+
+      // Constructing the payload with the phone number
+      const parameters = {
+        "Type": "CALL",
+        "EventType": "INBOUND",
+        "Action": "ACCEPT",
+        "ANI": phoneNumber,
+        "ExternalReferenceID": `${externalReferenceID}` // Random unique ID for example
+      };
+
+      // Send the data
+      sendIncomingCalltoC4C(parameters);
+    }
+
+    // Main function triggered by the button click
+    function finishCallData() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+
+      // If phone number is empty, alert the user
+      if (!phoneNumber) {
+        alert('Please enter a phone number');
+        return;
+      }
+
+      // Constructing the payload with the phone number
+      const parameters = {
+        "Type": "CALL",
+        "EventType": "UPDATEACTIVITY",
+        "Action": "END",
+        "ANI": phoneNumber,
+        "ExternalReferenceID": `${externalReferenceID}` // Random unique ID for example
+      };
+
+      // Send the data
+      sendIncomingCalltoC4C(parameters);
+    }
+
+    // Function to reset the ExternalReferenceID
+    function resetCall() {
+      externalReferenceID = generateUniqueID();
+      alert('Call reset. New ExternalReferenceID generated.');
+    }
+
+    // Function to generate a random unique ID (for demonstration)
+    function generateUniqueID() {
+      return 'xxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      }).toUpperCase();
+    }
+
+    
+  </script>
+</body>
+</html>
