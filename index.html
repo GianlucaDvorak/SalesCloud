@@ -76,7 +76,7 @@
     function sendIncomingCalltoC4C(parameters) {
       //var payload = _formXMLPayload(parameters);
       var payload = _formJSONPayload(parameters);
-      console.log("Here it starts!!!")
+      console.log("Here it starts!!!");
       displayPayload(payload);
       _doCall(payload);
       displayPayloadAfter(payload);
@@ -84,11 +84,10 @@
 
     // Function to actually post the message to the parent window
     function _doCall(sPayload) {
-      console.log("Here it posts!!!")
+      console.log("Here it posts!");
       window.parent.postMessage(sPayload, "*");
-      console.log("Here it postes end!!!")
-
-      console.log("test!!!")
+      console.log("Here it postes end!!!");
+      console.log("test!!!");
 
         // Confirmation handler - clears timeout on confirmation
       function confirmHandler(event) {
