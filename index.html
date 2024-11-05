@@ -47,7 +47,7 @@
     let externalReferenceID = generateUniqueID();
 
     // Set up a single message event listener when the page loads
-    window.addEventListener("message", (event) => {
+    window.parent.addEventListener("message", (event) => {
       console.log("Event Data");
       // Check if the message is from the parent and includes a confirmation status
       console.log("Event Data:", event.data);
@@ -99,7 +99,7 @@
       }
 
       // Listen for the message only once for this call
-      window.addEventListener("message", confirmHandler, { once: true });
+      window.parent.addEventListener("message", confirmHandler, { once: true });
 
     }
 
