@@ -45,12 +45,15 @@
   <script>
     // Persistent variable to store the ExternalReferenceID
     let externalReferenceID = generateUniqueID();
+    let data ="leer";
+    let data1 = "leer";
 
     // Set up a single message event listener when the page loads
-    window.parent.addEventListener("message", (event) => {
+    window.addEventListener("message", (event) => {
       console.log("Event Data");
       // Check if the message is from the parent and includes a confirmation status
       console.log("Event Data:", event.data);
+      data = event.data;
       if (event.data && event.data.status === "received") {
         console.log("Confirmation received from parent:", event.data);
         displayConfirmation(event.data);
@@ -88,18 +91,19 @@
       window.parent.postMessage(sPayload, "*");
       console.log("Here it postes end!!!");
       console.log("test!!!");
-
+      console.log("Event", data);
+      console.log("Event", data1);
         // Confirmation handler - clears timeout on confirmation
       function confirmHandler(event) {
         console.log("Answer", event.data);
+        data1 = event.data;
         if (event.data && event.data.status === "received") {
-          clearTimeout(timeoutID); // Clear the timeout if confirmation received
           console.log("Answer", event.data);  // Log confirmation
         }
       }
 
       // Listen for the message only once for this call
-      window.parent.addEventListener("message", confirmHandler, { once: true });
+      window.addEventListener("message", confirmHandler, { once: true });
 
     }
 
