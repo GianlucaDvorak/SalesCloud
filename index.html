@@ -48,6 +48,14 @@
 
 
   <script>
+    window.addEventListener("message", async (event) => {
+      try {
+        // Log that the event was triggered
+        console.log("Event triggered for outgoing call");
+      } catch{
+        console.log("error for outgoing call");
+      }
+    });
     // Persistent variable to store the ExternalReferenceID
     let externalReferenceID = generateUniqueID();
     let callSound = document.getElementById("callSound");
